@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+
+    html, body, #map {
+      height: 100%;
+      width: 100%;
+    }
+    html {
+      font-family: Helvetica, Arial, sans-serif;
+    }
+    body {
+      padding: 0;
+      margin: 0;
+    }
+    .leaflet-container {
+      background:rgba(255,255,255,0.0) !important;
+    }
+    .info {
+      font-size: 150%;
+      color: #6d6e70;
+    }
+
+  </style>
+  <link rel="stylesheet" href="leaflet.css" />
+
+</head>
+<body>
+
+  <div id="map"></div>
+
+</body>
+<script src="leaflet.js"></script>
+<script src="world.js"></script>
+<script>
+
+var loc = window.location.toString(),
+    params = '';
+if (loc.indexOf('?') !== -1){
+  params = loc.split('?')[1].toUpperCase();
+}
+
+var displayed = [];
+
+if(params === "WORLD"){
+  displayed = world.features;
+} else {
+  for(var i=0; i<world.features.length; i++){
+    if (world.features[i].properties.geoCode === params){
+      displayed = world.features[i];
+    }
+  }
+}
+
+var map = L.map('map').setView([0, 0], 2);
+// map.fitWorld();
+map.fitBounds([
+  [-50, 130],
+  [60, -110]
+]);
+
+function style(feature) {
+    return {
+        fillColor: "#8ec06c",
+				fillOpacity: 1,
+				weight: 1,
+				opacity: 1,
+				color: 'white'
+    };
+}
+function highlightFeature(e) {
+    var layer = e.target;
+    layer.setStyle({
+        fillColor: '#ecb731',
+    });
+    if (!L.Browser.ie && !L.Browser.opera) { layer.bringToFront(); }
+		info.update(layer.feature.properties);
+}
+function resetHighlight(e) {
+	countries.resetStyle(e.target);
+	info.update();
+}
+function onEachFeature(feature, layer) {
+    layer.on({
+        mouseover: highlightFeature,
+        mouseout: resetHighlight
+    });
+}
+
+var countries = L.geoJson(displayed, {style: style, onEachFeature: onEachFeature})
+countries.addTo(map);
+map.fitBounds(countries.getBounds());
+
+var info = L.control();
+
+info.onAdd = function (map) {
+    this._div = L.DomUtil.create('div', 'info'); // create a div with a class "info"
+    this.update();
+    return this._div;
+};
+// method that we will use to update the control based on feature properties passed
+info.update = function (props) {
+    infoHtml = '';
+    if(props){
+      infoHtml += '<b>' + props.name + '</b><br>';
+    } else {
+      infoHtml += '';
+    }
+    this._div.innerHTML = infoHtml;
+};
+info.addTo(map);
+
+
+</script>
+</html>
