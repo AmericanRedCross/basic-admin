@@ -58,11 +58,6 @@ if(params === "WORLD"){
 }
 
 var map = L.map('map').setView([0, 0], 2);
-// map.fitWorld();
-map.fitBounds([
-  [-50, 130],
-  [60, -110]
-]);
 
 function style(feature) {
     return {
@@ -94,7 +89,14 @@ function onEachFeature(feature, layer) {
 
 var countries = L.geoJson(displayed, {style: style, onEachFeature: onEachFeature})
 countries.addTo(map);
-map.fitBounds(countries.getBounds());
+if (params === 'WORLD'){
+  map.fitBounds([
+    [-50, 130],
+    [60, -110]
+  ]);
+} else {
+  map.fitBounds(countries.getBounds());
+}
 
 var info = L.control();
 
