@@ -80,11 +80,22 @@ function resetHighlight(e) {
 	countries.resetStyle(e.target);
 	info.update();
 }
+function onClick(e) {
+	var layer = e.target;
+	var country = layer.feature.properties.name.replace(/ /g,"_");
+	var link = "http://www.preparecenter.org/countries/" + country;
+	window.open(link,"_self");
+}
 function onEachFeature(feature, layer) {
     layer.on({
         mouseover: highlightFeature,
         mouseout: resetHighlight
     });
+		if(params === "WORLD"){
+			layer.on({
+					click: onClick
+			});
+		}
 }
 
 var countries = L.geoJson(displayed, {style: style, onEachFeature: onEachFeature})
