@@ -37,21 +37,34 @@
 </body>
 <script src="leaflet.js"></script>
 <script src="world.js"></script>
+<script src="lookup.js"></script>
 <script>
 
-var loc = window.location.toString(),
-    params = '';
-if (loc.indexOf('?') !== -1){
-  params = loc.split('?')[1].toUpperCase();
+var urls = {};
+
+// join url data to world geojson data
+for(var i=0; i<lookup.length; i++){
+	for(var g=0; i<world.features.length; g++){
+		if (world.features[g].properties.geoCode.toUpperCase() === lookup[i].iso.toUpperCase()){
+      world.features[g].properties.name = lookup[i].name;
+			var urlArray = lookup[i].name.replace(/\/$/, '').split('/');
+			world.features[g].properties["urlName"] = urlArray[urlArray.length - 1];
+    }
+	}
 }
+
+// get parent window URL and remove trailing slash if there is one then split
+var locArray = window.parent.location.toString().replace(/\/$/, '').split('/');
+var param = locArray[locArray.length-1].toLowerCase();
+
 
 var displayed = [];
 
-if(params === "WORLD"){
+if(param === "countries"){
   displayed = world.features;
 } else {
   for(var i=0; i<world.features.length; i++){
-    if (world.features[i].properties.geoCode === params){
+    if (world.features[i].properties.urlName === params){
       displayed = world.features[i];
     }
   }
@@ -82,8 +95,7 @@ function resetHighlight(e) {
 }
 function onClick(e) {
 	var layer = e.target;
-	var country = layer.feature.properties.name.replace(/ /g,"_");
-	var link = "http://www.preparecenter.org/countries/" + country;
+	var link = "http://www.preparecenter.org/countries/" + layer.feature.properties.urlName;
 	window.open(link,"_self");
 }
 function onEachFeature(feature, layer) {
@@ -91,7 +103,7 @@ function onEachFeature(feature, layer) {
         mouseover: highlightFeature,
         mouseout: resetHighlight
     });
-		if(params === "WORLD"){
+		if(params === "countries"){
 			layer.on({
 					click: onClick
 			});
@@ -100,7 +112,7 @@ function onEachFeature(feature, layer) {
 
 var countries = L.geoJson(displayed, {style: style, onEachFeature: onEachFeature})
 countries.addTo(map);
-if (params === 'WORLD'){
+if (params === 'countries '){
   map.fitBounds([
     [-50, 130],
     [60, -110]
