@@ -44,7 +44,7 @@ var urls = {};
 
 // join url data to world geojson data
 for(var i=0; i<lookup.length; i++){
-	for(var g=0; i<world.features.length; g++){
+	for(var g=0; g<world.features.length; g++){
 		if (world.features[g].properties.geoCode.toUpperCase() === lookup[i].iso.toUpperCase()){
       world.features[g].properties.name = lookup[i].name;
 			var urlArray = lookup[i].name.replace(/\/$/, '').split('/');
