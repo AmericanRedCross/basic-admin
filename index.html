@@ -42,29 +42,30 @@
 
 var urls = {};
 
-// join url data to world geojson data
+// overwrite world geojson names w gdpc names
+// add URL data (for world map on countries overview page)
 for(var i=0; i<lookup.length; i++){
 	for(var g=0; g<world.features.length; g++){
 		if (world.features[g].properties.geoCode.toUpperCase() === lookup[i].iso.toUpperCase()){
       world.features[g].properties.name = lookup[i].name;
-			var urlArray = lookup[i].name.replace(/\/$/, '').split('/');
-			world.features[g].properties["urlName"] = urlArray[urlArray.length - 1];
+			world.features[g].properties["url"] = lookup[i].url;
     }
 	}
 }
 
-// get parent window URL and remove trailing slash if there is one then split
-var locArray = window.parent.location.toString().replace(/\/$/, '').split('/');
-var param = locArray[locArray.length-1].toLowerCase();
-
+var loc = window.location.toString(),
+    param = '';
+if (loc.indexOf('?') !== -1){
+  param = loc.split('?')[1].toUpperCase();
+}
 
 var displayed = [];
 
-if(param === "countries"){
+if(param === "WORLD"){
   displayed = world.features;
 } else {
   for(var i=0; i<world.features.length; i++){
-    if (world.features[i].properties.urlName === params){
+    if (world.features[i].properties.geoCode === param){
       displayed = world.features[i];
     }
   }
@@ -95,15 +96,15 @@ function resetHighlight(e) {
 }
 function onClick(e) {
 	var layer = e.target;
-	var link = "http://www.preparecenter.org/countries/" + layer.feature.properties.urlName;
-	window.open(link,"_self");
+	var link = "http://www.preparecenter.org" + layer.feature.properties.url;
+	window.open(link,"_parent");
 }
 function onEachFeature(feature, layer) {
     layer.on({
         mouseover: highlightFeature,
         mouseout: resetHighlight
     });
-		if(params === "countries"){
+		if(param === "WORLD"){
 			layer.on({
 					click: onClick
 			});
@@ -112,7 +113,7 @@ function onEachFeature(feature, layer) {
 
 var countries = L.geoJson(displayed, {style: style, onEachFeature: onEachFeature})
 countries.addTo(map);
-if (params === 'countries '){
+if (param === 'WORLD'){
   map.fitBounds([
     [-50, 130],
     [60, -110]
